@@ -1,0 +1,52 @@
+#attach the workfile
+attach(data)
+
+#load required packages
+library(orca)
+library(vars)
+library(mFilter)
+library(tseries)
+library(forecast)
+library(tidyverse)
+library(ggplot2)
+
+#declare time-series variables
+gap <- ts(data$gap, start = c(2010,1), frequency = 4)
+cpi <- ts(data$cpi, start = c(2010,1), frequency = 4)
+rate <- ts(data$rate, start = c(2010,1), frequency = 4)
+
+#binding the data
+VAR_MODEL.bv <- cbind(gap, cpi, rate)
+colnames(VAR_MODEL.bv) <- cbind("OutputGap", "Inflation", "Rate")
+
+#setting the restrictions
+amat <- diag(3)
+amat[2,1] <- NA
+amat[3,1] <- NA
+amat[3,2] <- NA
+amat
+
+#finding the optimal lags
+lagselect <- VARselect(VAR_MODEL.bv, lag.max = 5, type = "const")
+lagselect$selection
+
+#building VAR
+modelVAR <- VAR(VAR_MODEL.bv, p = 2, type = "const", season = NULL, exog = NULL)
+summary(modelVAR)
+
+#building SVAR
+SVARMODEL1 <- SVAR(modelVAR, Amat = amat, Bmat = NULL, hessian = TRUE, estmethod = c("scoring", "direct"))
+SVARMODEL1
+
+#Impulse Response Functions
+OutputShock <- irf(SVARMODEL1, impulse = "OutputGap", response = "Inflation")
+OutputShock
+plot(OutputShock)
+
+OutputShock <- irf(SVARMODEL1, impulse = "OutputGap", response = "Rate")
+OutputShock
+plot(OutputShock)
+
+InflationShock <- irf(SVARMODEL1, impulse = "Inflation", response = "Rate")
+InflationShock
+plot(InflationShock)
