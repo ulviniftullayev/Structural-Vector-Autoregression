@@ -1,0 +1,1 @@
+I estimate Structural Vector Autoregression (SVAR) on the U.S. economy. The pdf file shows the estimation along the way (what SVAR is, what data is used, how the model is estimated and interpreted). Below the pdf file you will find a script for estimating SVAR in R.
